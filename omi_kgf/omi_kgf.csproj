@@ -34,8 +34,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\dsp\libs\alglibnet2.dll</HintPath>
+    </Reference>
+    <Reference Include="DocX">
+      <HintPath>..\dsp\libs\DocX.dll</HintPath>
+    </Reference>
+    <Reference Include="MoreLinq">
+      <HintPath>..\dsp\libs\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -44,6 +55,12 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="TeeChart">
+      <HintPath>..\dsp\libs\TeeChart.dll</HintPath>
+    </Reference>
+    <Reference Include="TeeChart.OpenGL">
+      <HintPath>..\dsp\libs\TeeChart.OpenGL.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -92,6 +109,28 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\dsp\Common\Common.csproj">
+      <Project>{f1b5916d-9235-4550-b48d-254e0326a457}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dsp\DiscreteFunctionsPlots\DiscreteFunctionsPlots.csproj">
+      <Project>{d928a857-0953-405e-8cbf-75004e1fb16d}</Project>
+      <Name>DiscreteFunctionsPlots</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dsp\DiscreteFunctions\DiscreteFunctions.csproj">
+      <Project>{50ea4957-adba-4d75-9887-778a225771d7}</Project>
+      <Name>DiscreteFunctions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dsp\GraphBuilders\GraphBuilders.csproj">
+      <Project>{bdc39007-e778-43f2-87dd-d9000afe5d16}</Project>
+      <Name>GraphBuilders</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\dsp\Transformers\Transformers.csproj">
+      <Project>{2946b7f9-a6e5-417b-b19c-077a7e1c22b8}</Project>
+      <Name>Transformers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
