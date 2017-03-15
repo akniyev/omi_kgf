@@ -111,8 +111,10 @@ namespace omi_kgf
             return discreteFunction;
         }
 
-        public double[] generateGrid1D()
+        public double[] generateGrid1D(int NumberOfNodes = -1)
         {
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
+
             double[] grid = new double[NumberOfNodes];
 
             for (int i = 0; i < NumberOfNodes; i++)
@@ -123,32 +125,54 @@ namespace omi_kgf
             return grid;
         }
 
-        //1D Fourier transform
-
-        public double[] getFourierTransform1D(double[] valuesOnGrid)
+        public double[] getArrayWithAmendedZeros(double[] shortArray, int desiredLength)
         {
-            return getFourierTransform1DSlow(valuesOnGrid);
+            if (shortArray.Length > desiredLength)
+            {
+                throw new Exception();
+            }
+            double[] resultArray = new double[desiredLength];
+
+            for (int i = 0; i < shortArray.Length; i++)
+            {
+                resultArray[i] = shortArray[i];
+            }
+
+            for (int i = shortArray.Length; i < desiredLength; i++)
+            {
+                resultArray[i] = 0;
+            }
+
+            return resultArray;
         }
 
-        public double[] getInverseFourierTransform1D(double[] coefficients)
+        //1D Fourier transform
+        public double[] getFourierTransform1D(double[] valuesOnGrid, int NumberOfNodes = -1)
         {
-            return getInverseFourierTransform1DSlow(coefficients);
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
+            return getFourierTransform1DSlow(valuesOnGrid, NumberOfNodes);
+        }
+
+        public double[] getInverseFourierTransform1D(double[] coefficients, int NumberOfNodes = -1)
+        {
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
+            return getInverseFourierTransform1DSlow(coefficients, NumberOfNodes);
         }
 
         //2D Fourier transform
-
-        public double[,] getFourierTransform2D(double[,] valuesOnGrid)
+        public double[,] getFourierTransform2D(double[,] valuesOnGrid, int NumberOfNodes = -1)
         {
-            return getFourierTransform2DSlow(valuesOnGrid);
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
+            return getFourierTransform2DSlow(valuesOnGrid, NumberOfNodes);
         }
 
-        public double[,] getInverseFourierTransform2D(double[,] coefficients)
+        public double[,] getInverseFourierTransform2D(double[,] coefficients, int NumberOfNodes = -1)
         {
-            return getInverseFourierTransform2DSlow(coefficients);
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
+            return getInverseFourierTransform2DSlow(coefficients, NumberOfNodes);
         }
 
         //Restoring function g's coefficients from II's problem
-
         public double[] getCoefficientsOfG(double[,] valuesOfK, double[] valuesOfF)
         {
             double[,] coefficientsOfK = getFourierTransform2D(valuesOfK);
@@ -195,7 +219,7 @@ namespace omi_kgf
 
         //One-dimensional SLOW Fourier transform
 
-        private double[] getFourierTransform1DSlow(double[] discreteFunctionValuesOnGrid)
+        private double[] getFourierTransform1DSlow(double[] discreteFunctionValuesOnGrid, int NumberOfNodes)
         {
             if (discreteFunctionValuesOnGrid.Count() != NumberOfNodes)
             {
@@ -206,13 +230,13 @@ namespace omi_kgf
 
             for (var coefficientIndex = 0; coefficientIndex < NumberOfNodes; coefficientIndex++)
             {
-                coefficients[coefficientIndex] = computeFourierCoefficientSlow(coefficientIndex, discreteFunctionValuesOnGrid);
+                coefficients[coefficientIndex] = computeFourierCoefficientSlow(coefficientIndex, discreteFunctionValuesOnGrid, NumberOfNodes);
             }
 
             return coefficients;
         }
 
-        private double[] getInverseFourierTransform1DSlow(double[] coefficients)
+        private double[] getInverseFourierTransform1DSlow(double[] coefficients, int NumberOfNodes)
         {
             if (coefficients.Count() != NumberOfNodes)
             {
@@ -223,13 +247,13 @@ namespace omi_kgf
 
             for (var nodeIndex = 0; nodeIndex < NumberOfNodes; nodeIndex++)
             {
-                discreteFunctionValuesOnGrid[nodeIndex] = computeDiscreteFunctionValueSlow(nodeIndex, coefficients);
+                discreteFunctionValuesOnGrid[nodeIndex] = computeDiscreteFunctionValueSlow(nodeIndex, coefficients, NumberOfNodes);
             }
 
             return discreteFunctionValuesOnGrid;
         }
 
-        private double computeFourierCoefficientSlow(int coefficientIndex, double[] discreteFunctionValuesOnGrid)
+        private double computeFourierCoefficientSlow(int coefficientIndex, double[] discreteFunctionValuesOnGrid, int NumberOfNodes)
         {
             if (coefficientIndex < 0 || coefficientIndex >= NumberOfNodes)
             {
@@ -246,7 +270,7 @@ namespace omi_kgf
             return coefficient;
         }
 
-        private double computeDiscreteFunctionValueSlow(int nodeIndex, double[] coefficients)
+        private double computeDiscreteFunctionValueSlow(int nodeIndex, double[] coefficients, int NumberOfNodes)
         {
             if (coefficients.Count() != NumberOfNodes)
             {
@@ -265,7 +289,7 @@ namespace omi_kgf
 
         //Two-dimensional SLOW Fourier transform
 
-        private double[,] getFourierTransform2DSlow(double[,] discreteFunctionValues)
+        private double[,] getFourierTransform2DSlow(double[,] discreteFunctionValues, int NumberOfNodes)
         {
             if (discreteFunctionValues.GetLength(0) != NumberOfNodes || discreteFunctionValues.GetLength(1) != NumberOfNodes)
             {
@@ -278,14 +302,14 @@ namespace omi_kgf
             {
                 for (var coefficientIndex2 = 0; coefficientIndex2 < NumberOfNodes; coefficientIndex2++)
                 {
-                    coefficients[coefficientIndex1, coefficientIndex2] = compute2DFourierCoefficientSlow(coefficientIndex1, coefficientIndex2, discreteFunctionValues);
+                    coefficients[coefficientIndex1, coefficientIndex2] = compute2DFourierCoefficientSlow(coefficientIndex1, coefficientIndex2, discreteFunctionValues, NumberOfNodes);
                 }
             }
 
             return coefficients;
         }
 
-        private double[,] getInverseFourierTransform2DSlow(double[,] coefficients)
+        private double[,] getInverseFourierTransform2DSlow(double[,] coefficients, int NumberOfNodes)
         {
             if (coefficients.GetLength(0) != NumberOfNodes || coefficients.GetLength(1) != NumberOfNodes)
             {
@@ -298,14 +322,14 @@ namespace omi_kgf
             {
                 for (int functionIndex2 = 0; functionIndex2 < NumberOfNodes; functionIndex2++)
                 {
-                    f[functionIndex1, functionIndex2] = compute2DDiscreteFunctionValueSlow(functionIndex1, functionIndex2, coefficients);
+                    f[functionIndex1, functionIndex2] = compute2DDiscreteFunctionValueSlow(functionIndex1, functionIndex2, coefficients, NumberOfNodes);
                 }
             }
 
             return f;
         }
 
-        private double compute2DFourierCoefficientSlow(int coefficientIndex1, int coefficientIndex2, double[,] discreteFunctionValuesOnGrid)
+        private double compute2DFourierCoefficientSlow(int coefficientIndex1, int coefficientIndex2, double[,] discreteFunctionValuesOnGrid, int NumberOfNodes)
         {
             if (discreteFunctionValuesOnGrid.GetLength(0) != NumberOfNodes || discreteFunctionValuesOnGrid.GetLength(1) != NumberOfNodes)
             {
@@ -325,7 +349,7 @@ namespace omi_kgf
             return coefficient;
         }
 
-        private double compute2DDiscreteFunctionValueSlow(int functionIndex1, int functionIndex2, double[,] coefficients)
+        private double compute2DDiscreteFunctionValueSlow(int functionIndex1, int functionIndex2, double[,] coefficients, int NumberOfNodes)
         {
             double functionValue = 0;
 
@@ -349,9 +373,9 @@ namespace omi_kgf
         Plot3D restoredFunctionPlot3d;
 
         GraphBuilder2DForm graphBuilder2dForm;
-        Plot2D plot1;
-        Plot2D plot2;
-        Plot2D plot3;
+        Plot2D originalFPlot;
+        Plot2D coefficientsOfFPlot;
+        Plot2D restoredFPlot;
 
         public MainWindow()
         {
@@ -375,20 +399,21 @@ namespace omi_kgf
             // 2D plot
             graphBuilder2dForm = new GraphBuilder2DForm();
 
-            plot1 = new Plot2D();
-            plot2 = new Plot2D();
-            plot3 = new Plot2D();
+            originalFPlot = new Plot2D();
+            coefficientsOfFPlot = new Plot2D();
+            restoredFPlot = new Plot2D();
 
-            graphBuilder2dForm.GraphBuilder.DrawPlot(plot1);
-            graphBuilder2dForm.GraphBuilder.DrawPlot(plot2);
-            graphBuilder2dForm.GraphBuilder.DrawPlot(plot3);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(originalFPlot);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(coefficientsOfFPlot);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(restoredFPlot);
+            graphBuilder2dForm.Show();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var functionApproximator = new FunctionApproximator();
 
-            functionApproximator.NumberOfNodes = 32;
+            functionApproximator.NumberOfNodes = 16;
             functionApproximator.NumberOfTriangleNodes = 8;
 
             //double[] xs = functionApproximator.generateGrid1D();
@@ -405,22 +430,55 @@ namespace omi_kgf
             //coefficientsPlot3d.DiscreteFunction = dfCoefficients;
             //restoredFunctionPlot3d.DiscreteFunction = dfRestoredFunction;
 
-            Func<double, double, double> K = (x, y) => 1;
+            Func<double, double, double> K = (x, y) => x / 100;
             Func<double, double> f = x => x;
 
+            var grid = functionApproximator.generateGrid1D();
+
             var valuesOfK = functionApproximator.discretizeFunction2D(K);
+            var coefficientsOfK = functionApproximator.getFourierTransform2D(valuesOfK);
+
+            functionPlot3d.DiscreteFunction = new DiscreteFunction3D(grid, grid, valuesOfK);
+            coefficientsPlot3d.DiscreteFunction = new DiscreteFunction3D(grid, grid, coefficientsOfK);
+
+            restoredFunctionPlot3d.DiscreteFunction = new DiscreteFunction3D(grid, grid, functionApproximator.getInverseFourierTransform2D(coefficientsOfK));
+
             var valuesOfF = functionApproximator.dicretizeFunction1D(f);
+            var coefficientsOfF = functionApproximator.getFourierTransform1D(valuesOfF);
+
             var coefficientsOfG = functionApproximator.getCoefficientsOfG(valuesOfK, valuesOfF);
+            var coefficientsOfGWithZeros = functionApproximator.getArrayWithAmendedZeros(coefficientsOfG, functionApproximator.NumberOfNodes);
+
+            var restoredG = functionApproximator.getInverseFourierTransform1D(coefficientsOfGWithZeros);
+
             
+
+            originalFPlot.DiscreteFunction = new DiscreteFunction2D(grid, valuesOfF);
+            coefficientsOfFPlot.DiscreteFunction = new DiscreteFunction2D(grid, coefficientsOfF);
+            restoredFPlot.DiscreteFunction = new DiscreteFunction2D(grid, functionApproximator.getInverseFourierTransform1D(coefficientsOfF));
+
+            //var restoredF = new double[functionApproximator.NumberOfNodes];
+            //for (int i = 0; i < functionApproximator.NumberOfNodes; i++)
+            //{
+            //    double f_i = 0;
+            //    for (int j = 0; j < functionApproximator.NumberOfNodes; j++)
+            //    {
+            //        f_i += valuesOfK[i, j] * restoredG[j];
+            //    }
+            //    restoredF[i] = f_i;
+            //}
+
+            //restoredFPlot.DiscreteFunction = new DiscreteFunction2D(grid, restoredF);            
+
             // 3D
             functionPlot3d.Refresh();
             coefficientsPlot3d.Refresh();
             restoredFunctionPlot3d.Refresh();
 
             // 2D
-            plot1.Refresh();
-            plot2.Refresh();
-            plot3.Refresh();
+            originalFPlot.Refresh();
+            coefficientsOfFPlot.Refresh();
+            restoredFPlot.Refresh();
         }
     }
 }
