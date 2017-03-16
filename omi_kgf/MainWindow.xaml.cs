@@ -376,6 +376,9 @@ namespace omi_kgf
         Plot2D originalFPlot;
         Plot2D coefficientsOfFPlot;
         Plot2D restoredFPlot;
+        Plot2D guessedGPlot;
+        Plot2D guessedGCoefficients;
+        Plot2D guessedFFromGPlot;
 
         public MainWindow()
         {
@@ -384,9 +387,9 @@ namespace omi_kgf
             // 3D plot
             graphBuilder3dForm = new GraphBuilder2DForm();
 
-            functionPlot3d = new Plot3D();
-            coefficientsPlot3d = new Plot3D();
-            restoredFunctionPlot3d = new Plot3D();
+            functionPlot3d = new Plot3D("functionPlot3d");
+            coefficientsPlot3d = new Plot3D("coefficientsPlot3d");
+            restoredFunctionPlot3d = new Plot3D("restoredFunctionPlot3d");
 
             graphBuilder3dForm.GraphBuilder.Set3DMode();
             graphBuilder3dForm.GraphBuilder.ChartPanel.Aspect.Chart3DPercent = 100;
@@ -399,13 +402,19 @@ namespace omi_kgf
             // 2D plot
             graphBuilder2dForm = new GraphBuilder2DForm();
 
-            originalFPlot = new Plot2D();
-            coefficientsOfFPlot = new Plot2D();
-            restoredFPlot = new Plot2D();
+            originalFPlot = new Plot2D("original F");
+            coefficientsOfFPlot = new Plot2D("coefficients of F");
+            restoredFPlot = new Plot2D("restored F");
+            guessedGPlot = new Plot2D("guessed G");
+            guessedFFromGPlot = new Plot2D("guessed F from G");
+            guessedGCoefficients = new Plot2D("guessed coefficients of G");
 
             graphBuilder2dForm.GraphBuilder.DrawPlot(originalFPlot);
             graphBuilder2dForm.GraphBuilder.DrawPlot(coefficientsOfFPlot);
             graphBuilder2dForm.GraphBuilder.DrawPlot(restoredFPlot);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(guessedGPlot);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(guessedFFromGPlot);
+            graphBuilder2dForm.GraphBuilder.DrawPlot(guessedGCoefficients);
             graphBuilder2dForm.Show();
         }
 
@@ -413,7 +422,7 @@ namespace omi_kgf
         {
             var functionApproximator = new FunctionApproximator();
 
-            functionApproximator.NumberOfNodes = 16;
+            functionApproximator.NumberOfNodes = 64;
             functionApproximator.NumberOfTriangleNodes = 8;
 
             //double[] xs = functionApproximator.generateGrid1D();
@@ -430,8 +439,8 @@ namespace omi_kgf
             //coefficientsPlot3d.DiscreteFunction = dfCoefficients;
             //restoredFunctionPlot3d.DiscreteFunction = dfRestoredFunction;
 
-            Func<double, double, double> K = (x, y) => x / 100;
-            Func<double, double> f = x => x;
+            Func<double, double, double> K = (x, y) => 1.0 / (Abs(Sin(x)) + Abs(Cos(x)) + Abs(Sin(y)) + Abs(Cos(y)));
+            Func<double, double> f = x => Sin(x);
 
             var grid = functionApproximator.generateGrid1D();
 
@@ -451,24 +460,25 @@ namespace omi_kgf
 
             var restoredG = functionApproximator.getInverseFourierTransform1D(coefficientsOfGWithZeros);
 
+            guessedGPlot.DiscreteFunction = new DiscreteFunction2D(grid, restoredG);
             
 
             originalFPlot.DiscreteFunction = new DiscreteFunction2D(grid, valuesOfF);
             coefficientsOfFPlot.DiscreteFunction = new DiscreteFunction2D(grid, coefficientsOfF);
             restoredFPlot.DiscreteFunction = new DiscreteFunction2D(grid, functionApproximator.getInverseFourierTransform1D(coefficientsOfF));
 
-            //var restoredF = new double[functionApproximator.NumberOfNodes];
-            //for (int i = 0; i < functionApproximator.NumberOfNodes; i++)
-            //{
-            //    double f_i = 0;
-            //    for (int j = 0; j < functionApproximator.NumberOfNodes; j++)
-            //    {
-            //        f_i += valuesOfK[i, j] * restoredG[j];
-            //    }
-            //    restoredF[i] = f_i;
-            //}
+            var restoredF = new double[functionApproximator.NumberOfNodes];
+            for (int i = 0; i < functionApproximator.NumberOfNodes; i++)
+            {
+                double f_i = 0;
+                for (int j = 0; j < functionApproximator.NumberOfNodes; j++)
+                {
+                    f_i += valuesOfK[i, j] * restoredG[j];
+                }
+                restoredF[i] = f_i;
+            }
 
-            //restoredFPlot.DiscreteFunction = new DiscreteFunction2D(grid, restoredF);            
+            guessedFFromGPlot.DiscreteFunction = new DiscreteFunction2D(grid, restoredF);
 
             // 3D
             functionPlot3d.Refresh();
@@ -479,6 +489,9 @@ namespace omi_kgf
             originalFPlot.Refresh();
             coefficientsOfFPlot.Refresh();
             restoredFPlot.Refresh();
+            guessedGPlot.Refresh();
+            //guessedFFromGPlot.Refresh();
+            //guessedGCoefficients.Refresh();
         }
     }
 }
