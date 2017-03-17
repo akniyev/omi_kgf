@@ -219,7 +219,7 @@ namespace omi_kgf
             return true;
         }
 
-        public double getScalarProduct(double[] function1, double[] function2)
+        public double getScalarProduct1D(double[] function1, double[] function2)
         {
             if (function1.Length != function2.Length)
             {
@@ -233,6 +233,30 @@ namespace omi_kgf
             for (var i = 0; i < NumberOfNodes; i++)
             {
                 scalarProduct += function1[i] * function2[i];
+            }
+
+            //scalarProduct *= 1.0 / NumberOfNodes;
+
+            return scalarProduct;
+        }
+
+        public double getScalarProduct2D(double[,] function1, double[,] function2)
+        {
+            if (function1.GetLength(0) != function2.GetLength(0) || function1.GetLength(1) != function2.GetLength(1) || function1.GetLength(0) != function2.GetLength(1))
+            {
+                throw new Exception();
+            }
+
+            int NumberOfNodes = function1.GetLength(0);
+
+            double scalarProduct = 0;
+
+            for (int i = 0; i < NumberOfNodes; i++)
+            {
+                for (int j = 0; j < NumberOfNodes; j++)
+                {
+                    scalarProduct += function1[i, j] * function2[i, j];
+                }
             }
 
             //scalarProduct *= 1.0 / NumberOfNodes;
@@ -284,7 +308,7 @@ namespace omi_kgf
             }
 
             var discretizedPhi = discretizeFunction1D(x => phi(coefficientIndex, x));
-            var coefficient = getScalarProduct(discreteFunctionValuesOnGrid, discretizedPhi);
+            var coefficient = getScalarProduct1D(discreteFunctionValuesOnGrid, discretizedPhi);
             return coefficient;
         }
 
@@ -302,7 +326,7 @@ namespace omi_kgf
                 discretizedPhi[i] = phi(i, node(nodeIndex));
             }
 
-            return getScalarProduct(coefficients, discretizedPhi);
+            return getScalarProduct1D(coefficients, discretizedPhi);
         }
 
         //Two-dimensional SLOW Fourier transform
@@ -354,32 +378,31 @@ namespace omi_kgf
                 throw new Exception();
             }
 
-            double coefficient = 0;
-
+            var discretizedPhi = new double[NumberOfNodes, NumberOfNodes];
             for (var functionIndex1 = 0; functionIndex1 < NumberOfNodes; functionIndex1++)
             {
                 for (var functionIndex2 = 0; functionIndex2 < NumberOfNodes; functionIndex2++)
                 {
-                    coefficient += discreteFunctionValuesOnGrid[functionIndex1, functionIndex2] * phi(coefficientIndex1, node(functionIndex1)) * phi(coefficientIndex2, node(functionIndex2));
+                    discretizedPhi[functionIndex1, functionIndex2] = phi(coefficientIndex1, node(functionIndex1)) * phi(coefficientIndex2, node(functionIndex2));
                 }
             }
 
-            return coefficient;
+            return getScalarProduct2D(discreteFunctionValuesOnGrid, discretizedPhi);
         }
 
         private double compute2DDiscreteFunctionValueSlow(int functionIndex1, int functionIndex2, double[,] coefficients, int NumberOfNodes)
         {
-            double functionValue = 0;
+            double[,] discretizedPhi = new double[NumberOfNodes, NumberOfNodes];
 
             for (var n = 0; n < NumberOfNodes; n++)
             {
                 for (var m = 0; m < NumberOfNodes; m++)
                 {
-                    functionValue += coefficients[n, m] * phi(n, node(functionIndex1)) * phi(m, node(functionIndex2));
+                    discretizedPhi[n, m] += phi(n, node(functionIndex1)) * phi(m, node(functionIndex2));
                 }
             }
 
-            return functionValue;
+            return getScalarProduct2D(coefficients, discretizedPhi);
         }
     }
 
