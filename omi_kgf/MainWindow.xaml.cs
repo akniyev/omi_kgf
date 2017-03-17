@@ -66,9 +66,10 @@ namespace omi_kgf
             else
                 return Sqrt(2.0 / NumberOfNodes) * Cos(k * x);
         }
-
-        public double node(int i)
+        
+        public double node(int i, int NumberOfNodes = -1)
         {
+            if (NumberOfNodes == -1) NumberOfNodes = this.NumberOfNodes;
             return (2 * i + 1.0) * PI / (2.0 * NumberOfNodes);
         }
 
@@ -84,7 +85,7 @@ namespace omi_kgf
 
         //Helper
 
-        public double[] dicretizeFunction1D(Func<double, double> function)
+        public double[] discretizeFunction1D(Func<double, double> function)
         {
             double[] discreteFunction = new double[NumberOfNodes];
 
@@ -145,6 +146,7 @@ namespace omi_kgf
 
             return resultArray;
         }
+
 
         //1D Fourier transform
         public double[] getFourierTransform1D(double[] valuesOnGrid, int NumberOfNodes = -1)
@@ -217,6 +219,27 @@ namespace omi_kgf
             return true;
         }
 
+        public double getScalarProduct(double[] function1, double[] function2)
+        {
+            if (function1.Length != function2.Length)
+            {
+                throw new Exception();
+            }
+
+            int NumberOfNodes = function1.Length;
+
+            double scalarProduct = 0;
+
+            for (var i = 0; i < NumberOfNodes; i++)
+            {
+                scalarProduct += function1[i] * function2[i];
+            }
+
+            //scalarProduct *= 1.0 / NumberOfNodes;
+
+            return scalarProduct;
+        }
+
         //One-dimensional SLOW Fourier transform
 
         private double[] getFourierTransform1DSlow(double[] discreteFunctionValuesOnGrid, int NumberOfNodes)
@@ -260,13 +283,8 @@ namespace omi_kgf
                 throw new Exception();
             }
 
-            double coefficient = 0;
-
-            for (var nodeIndex = 0; nodeIndex < NumberOfNodes; nodeIndex++)
-            {
-                coefficient += discreteFunctionValuesOnGrid[nodeIndex] * phi(coefficientIndex, node(nodeIndex));
-            }
-
+            var discretizedPhi = discretizeFunction1D(x => phi(coefficientIndex, x));
+            var coefficient = getScalarProduct(discreteFunctionValuesOnGrid, discretizedPhi);
             return coefficient;
         }
 
@@ -277,14 +295,14 @@ namespace omi_kgf
                 throw new Exception();
             }
 
-            double functionValue = 0;
+            var discretizedPhi = new double[NumberOfNodes];
 
-            for (var coefficientIndex = 0; coefficientIndex < NumberOfNodes; coefficientIndex++)
+            for (var i = 0; i < NumberOfNodes; i++)
             {
-                functionValue += coefficients[coefficientIndex] * phi(coefficientIndex, node(nodeIndex));
+                discretizedPhi[i] = phi(i, node(nodeIndex));
             }
 
-            return functionValue;
+            return getScalarProduct(coefficients, discretizedPhi);
         }
 
         //Two-dimensional SLOW Fourier transform
@@ -422,7 +440,7 @@ namespace omi_kgf
         {
             var functionApproximator = new FunctionApproximator();
 
-            functionApproximator.NumberOfNodes = 64;
+            functionApproximator.NumberOfNodes = 32;
             functionApproximator.NumberOfTriangleNodes = 8;
 
             //double[] xs = functionApproximator.generateGrid1D();
@@ -452,7 +470,7 @@ namespace omi_kgf
 
             restoredFunctionPlot3d.DiscreteFunction = new DiscreteFunction3D(grid, grid, functionApproximator.getInverseFourierTransform2D(coefficientsOfK));
 
-            var valuesOfF = functionApproximator.dicretizeFunction1D(f);
+            var valuesOfF = functionApproximator.discretizeFunction1D(f);
             var coefficientsOfF = functionApproximator.getFourierTransform1D(valuesOfF);
 
             var coefficientsOfG = functionApproximator.getCoefficientsOfG(valuesOfK, valuesOfF);
@@ -489,7 +507,7 @@ namespace omi_kgf
             originalFPlot.Refresh();
             coefficientsOfFPlot.Refresh();
             restoredFPlot.Refresh();
-            guessedGPlot.Refresh();
+            //guessedGPlot.Refresh();
             //guessedFFromGPlot.Refresh();
             //guessedGCoefficients.Refresh();
         }
